@@ -39,20 +39,36 @@ const supabase = require("./config/supabase");
 
 const app = express();
 const server = http.createServer(app);
+
+// ==========================
+// FIX 1: UPDATED CORS CONFIGURATION FOR VERCEL PRODUCTION
+// ==========================
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001", 
+  "http://localhost:5173",
+  "https://my-app-taupe-nine-96.vercel.app",  // YOUR VERCEL APP URL
+  "https://my-app-taupe-nine-96.vercel.app/", // With trailing slash
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+// Socket.io CORS
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE"]
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"]
   }
 });
 
-// Initialize Sentiment
-const sentiment = new Sentiment();
-
-// ==========================
-// MIDDLEWARE
-// ==========================
-app.use(cors());
+// Express CORS middleware
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 
 const SECRET_KEY = process.env.JWT_SECRET;
@@ -708,11 +724,26 @@ app.get("/", (req, res) => {
 });
 
 // ==========================
-// SIGNUP
+// FIX 2: ENHANCED SIGNUP WITH BETTER ERROR HANDLING
 // ==========================
 app.post("/signup", async (req, res) => {
   try {
     const { name, email, password } = req.body;
+
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email, and password are required"
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters"
+      });
+    }
 
     const { data: existingUsers, error: findError } =
       await supabase
@@ -724,9 +755,10 @@ app.post("/signup", async (req, res) => {
       throw findError;
     }
 
-    if (existingUsers.length > 0) {
+    if (existingUsers && existingUsers.length > 0) {
       return res.status(400).json({
-        message: "User already exists"
+        success: false,
+        message: "User already exists with this email"
       });
     }
 
@@ -739,7 +771,8 @@ app.post("/signup", async (req, res) => {
           name,
           email,
           password: hashedPassword,
-          role: "user"
+          role: "user",
+          created_at: new Date().toISOString()
         }
       ])
       .select();
@@ -748,16 +781,41 @@ app.post("/signup", async (req, res) => {
       throw error;
     }
 
+    if (!data || data.length === 0) {
+      throw new Error("Failed to create user");
+    }
+
     await logActivity(data[0].id, `User registered: ${email}`);
 
+    // Generate token for immediate login
+    const token = jwt.sign(
+      {
+        id: data[0].id,
+        email: data[0].email,
+        role: data[0].role || "user"
+      },
+      SECRET_KEY,
+      {
+        expiresIn: "24h"
+      }
+    );
+
     res.json({
+      success: true,
       message: "User registered successfully",
-      user: data[0]
+      token,
+      user: {
+        id: data[0].id,
+        name: data[0].name,
+        email: data[0].email,
+        role: data[0].role || "user"
+      }
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Signup error:", error);
     res.status(500).json({
+      success: false,
       message: "Signup error",
       error: error.message
     });
@@ -765,11 +823,19 @@ app.post("/signup", async (req, res) => {
 });
 
 // ==========================
-// LOGIN
+// FIX 3: ENHANCED LOGIN WITH BETTER ERROR MESSAGES
 // ==========================
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required"
+      });
+    }
 
     const { data: users, error } = await supabase
       .from("users")
@@ -777,12 +843,14 @@ app.post("/login", async (req, res) => {
       .eq("email", email);
 
     if (error) {
+      console.error("Database error during login:", error);
       throw error;
     }
 
-    if (users.length === 0) {
-      return res.status(400).json({
-        message: "User not found"
+    if (!users || users.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
       });
     }
 
@@ -791,8 +859,9 @@ app.post("/login", async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({
-        message: "Invalid password"
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
       });
     }
 
@@ -800,7 +869,7 @@ app.post("/login", async (req, res) => {
       {
         id: user.id,
         email: user.email,
-        role: user.role
+        role: user.role || "user"
       },
       SECRET_KEY,
       {
@@ -811,19 +880,21 @@ app.post("/login", async (req, res) => {
     await logActivity(user.id, `User logged in: ${email}`);
 
     res.json({
+      success: true,
       message: "Login successful",
       token,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role || "user"
       }
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     res.status(500).json({
+      success: false,
       message: "Login error",
       error: error.message
     });
@@ -3116,4 +3187,6 @@ server.listen(PORT, () => {
   console.log(`👥 Real-time Active Users Tracking: ENABLED (No duplicates on refresh)`);
   console.log(`📊 User Engagement Metrics: ENABLED`);
   console.log(`📉 Real Drop-off Calculations: ENABLED (Based on actual user activity)`);
+  console.log(`\n✅ CORS configured for: ${allowedOrigins.join(', ')}`);
+  console.log(`\n🎯 Ready for production at https://my-app-taupe-nine-96.vercel.app`);
 });
