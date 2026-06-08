@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+:root {
+  --dark: #050816;
+  --dark-soft: #0a1023;
+  --card: rgba(17, 24, 39, 0.72);
+  --sidebar: #171c44;
+  --border: #26324a;
+
+  --purple: #8b5cf6;
+  --blue: #3b82f6;
+  --cyan: #22d3ee;
+  --green: #22c55e;
+
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: linear-gradient(
+    180deg,
+    #050816 0%,
+    #0a1023 100%
+  );
+  color: var(--text-primary);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* =========================
+   Glass Card
+========================= */
+
+.glass-card {
+  background: rgba(17, 24, 39, 0.72);
+  backdrop-filter: blur(18px);
+  border: 1px solid #26324a;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+/* =========================
+   Sidebar
+========================= */
+
+.sidebar-gradient {
+  background: linear-gradient(
+    180deg,
+    #1b1f7a 0%,
+    #312e81 35%,
+    #4c1d95 70%,
+    #581c87 100%
+  );
+}
+
+/* =========================
+   Buttons
+========================= */
+
+.primary-gradient {
+  background: linear-gradient(
+    135deg,
+    #7c3aed 0%,
+    #2563eb 50%,
+    #22c55e 100%
+  );
+}
+
+/* =========================
+   Charts
+========================= */
+
+.chart-gradient {
+  background: linear-gradient(
+    90deg,
+    #9333ea 0%,
+    #3b82f6 40%,
+    #06b6d4 70%,
+    #22c55e 100%
+  );
+}
+
+/* =========================
+   Shadows
+========================= */
+
+.shadow-purple {
+  box-shadow: 0 0 25px rgba(147, 51, 234, 0.18);
+}
+
+.shadow-blue {
+  box-shadow: 0 0 25px rgba(37, 99, 235, 0.18);
+}
+
+.shadow-cyan {
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.18);
+}
+
+.shadow-green {
+  box-shadow: 0 0 25px rgba(34, 197, 94, 0.18);
+}
+
+/* =========================
+   Orbit Ring Animation
+========================= */
+
+@keyframes orbit-ring {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-orbit-ring {
+  animation: orbit-ring 12s linear infinite;
+}
+
+/* =========================
+   Scrollbar
+========================= */
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #312e81;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
