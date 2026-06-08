@@ -26,7 +26,8 @@ export default function LoginPage() {
   const [focusedField, setFocusedField] = useState(null);
   const [isPushing, setIsPushing] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  // ✅ FIX 1: Remove fallback to localhost
+  const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
     setMounted(true);
@@ -62,7 +63,15 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${API_URL}/login`, { email, password });
+      // ✅ FIX 2: Change from /login to /api/login (or adjust based on your backend)
+      // If your backend uses /api/login, use this:
+      const res = await axios.post(`${API_URL}/api/login`, { email, password });
+      
+      // If your backend uses just /login, use this instead:
+      // const res = await axios.post(`${API_URL}/login`, { email, password });
+      
+      // If your backend uses /auth/login, use this:
+      // const res = await axios.post(`${API_URL}/auth/login`, { email, password });
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
@@ -87,6 +96,7 @@ export default function LoginPage() {
       }, 500);
 
     } catch (error) {
+      console.error("Login error:", error);
       alert(error.response?.data?.message || "Login failed");
       setLoading(false);
     }
