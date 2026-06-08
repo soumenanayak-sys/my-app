@@ -65,7 +65,7 @@ export default function LoginPage() {
     try {
       // ✅ FIX 2: Change from /login to /api/login (or adjust based on your backend)
       // If your backend uses /api/login, use this:
-      const res = await axios.post(`${API_URL}/api/login`, { email, password });
+      const res = await axios.post(`${API_URL}/login`, { email, password });
       
       // If your backend uses just /login, use this instead:
       // const res = await axios.post(`${API_URL}/login`, { email, password });
