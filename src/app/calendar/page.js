@@ -17,6 +17,9 @@ import {
   AlertCircle
 } from "lucide-react";
 
+// ✅ FIX: Add API URL constant
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
+
 // Fixed Analog Clock Component - Correct Hand Positions
 function AnalogClock() {
   const [time, setTime] = useState(new Date());
@@ -204,10 +207,10 @@ export default function CalendarPage() {
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const user = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") || "{}") : null;
 
-  // Fetch meetings
+  // ✅ FIX: Fetch meetings with API_URL
   const fetchMeetings = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/meetings", {
+      const res = await axios.get(`${API_URL}/meetings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMeetings(res.data);
@@ -216,10 +219,10 @@ export default function CalendarPage() {
     }
   };
 
-  // Fetch events
+  // ✅ FIX: Fetch events with API_URL
   const fetchEvents = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/events", {
+      const res = await axios.get(`${API_URL}/events`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEvents(res.data);
@@ -234,12 +237,12 @@ export default function CalendarPage() {
     }
   }, [token]);
 
-  // Create meeting
+  // ✅ FIX: Create meeting with API_URL
   const createMeeting = async () => {
     try {
       const participantsArray = form.participants.split(",").map(e => e.trim()).filter(e => e);
       
-      await axios.post("http://localhost:5000/create-meeting", {
+      await axios.post(`${API_URL}/create-meeting`, {
         title: form.title,
         description: form.description,
         meeting_date: form.meeting_date,
@@ -269,10 +272,10 @@ export default function CalendarPage() {
     }
   };
 
-  // Create event
+  // ✅ FIX: Create event with API_URL
   const createEvent = async () => {
     try {
-      await axios.post("http://localhost:5000/create-event", {
+      await axios.post(`${API_URL}/create-event`, {
         title: form.title,
         description: form.description,
         event_date: form.event_date,
@@ -300,11 +303,11 @@ export default function CalendarPage() {
     }
   };
 
-  // Delete meeting
+  // ✅ FIX: Delete meeting with API_URL
   const deleteMeeting = async (id) => {
     if (!confirm("Delete this meeting?")) return;
     try {
-      await axios.delete(`http://localhost:5000/delete-meeting/${id}`, {
+      await axios.delete(`${API_URL}/delete-meeting/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchMeetings();
@@ -314,11 +317,11 @@ export default function CalendarPage() {
     }
   };
 
-  // Delete event
+  // ✅ FIX: Delete event with API_URL
   const deleteEvent = async (id) => {
     if (!confirm("Delete this event?")) return;
     try {
-      await axios.delete(`http://localhost:5000/delete-event/${id}`, {
+      await axios.delete(`${API_URL}/delete-event/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchEvents();
