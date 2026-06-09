@@ -38,7 +38,7 @@ export default function ProjectsPage() {
     progress: 0,
   });
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
 
   // ================= AUTH =================
   useEffect(() => {
@@ -125,27 +125,31 @@ export default function ProjectsPage() {
   // ================= REMINDER =================
   const sendReminder = async (id) => {
     const token = localStorage.getItem("token");
-
-    await axios.post(
-      `${API_URL}/send-reminder/${id}`,
-      {},
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-
-    alert("Reminder sent 🚀");
+    try {
+      await axios.post(
+        `${API_URL}/send-reminder/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert("Reminder sent successfully! 📧");
+    } catch (error) {
+      console.error("Failed to send reminder:", error);
+      alert(error.response?.data?.message || "Failed to send reminder");
+    }
   };
 
   // ================= FILTERED DATA =================
   const filteredProjects = useMemo(() => {
     return projects
       .filter((p) =>
-        p.title.toLowerCase().includes(search.toLowerCase())
+        p.title?.toLowerCase().includes(search.toLowerCase())
       )
       .filter((p) => {
         if (filter === "all") return true;
         if (filter === "low") return p.progress < 40;
         if (filter === "mid") return p.progress >= 40 && p.progress < 80;
         if (filter === "high") return p.progress >= 80;
+        return true;
       });
   }, [projects, search, filter]);
 
@@ -287,16 +291,17 @@ export default function ProjectsPage() {
                         <FolderKanban size={20} className="text-purple-400" />
                       </div>
                       <div className="flex gap-2">
+                        {/* ✅ REMINDER BUTTON - PAPER PLANE ICON */}
                         <button
                           onClick={() => sendReminder(p.id)}
-                          className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition"
-                          title="Send Reminder"
+                          className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition-all duration-300 hover:scale-110"
+                          title="Send Reminder Email"
                         >
                           <Send size={14} />
                         </button>
                         <button
                           onClick={() => deleteProject(p.id)}
-                          className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition"
+                          className="p-2 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all duration-300 hover:scale-110"
                           title="Delete Project"
                         >
                           <Trash2 size={14} />
@@ -309,7 +314,7 @@ export default function ProjectsPage() {
                     </h3>
                     
                     <p className="text-[#94A3B8] text-sm mb-4 line-clamp-2">
-                      {p.description}
+                      {p.description || "No description provided"}
                     </p>
 
                     {/* PROGRESS BAR */}
@@ -413,7 +418,7 @@ export default function ProjectsPage() {
                       <option value="">Select User</option>
                       {users.map((u) => (
                         <option key={u.id} value={u.id}>
-                          {u.name}
+                          {u.name || u.email}
                         </option>
                       ))}
                     </select>
