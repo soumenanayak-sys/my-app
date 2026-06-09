@@ -27,7 +27,7 @@ import {
   Save,
 } from "lucide-react";
 
-// ✅ FIX: Add API_URL constant for production
+// ✅ API URL for production
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
 
 export default function IdeasPage() {
@@ -90,7 +90,6 @@ export default function IdeasPage() {
   const fetchIdeas = async () => {
     try {
       const token = localStorage.getItem("token");
-      // ✅ FIX: Use API_URL instead of localhost
       const res = await axios.get(`${API_URL}/ideas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -113,7 +112,6 @@ export default function IdeasPage() {
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      // ✅ FIX: Use API_URL instead of localhost
       const res = await axios.get(`${API_URL}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -180,7 +178,6 @@ export default function IdeasPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      // ✅ FIX: Use API_URL instead of localhost
       await axios.post(
         `${API_URL}/create-idea`,
         formData,
@@ -198,7 +195,6 @@ export default function IdeasPage() {
   const voteIdea = async (ideaId) => {
     try {
       const token = localStorage.getItem("token");
-      // ✅ FIX: Use API_URL instead of localhost
       await axios.put(
         `${API_URL}/vote-idea/${ideaId}`,
         {},
@@ -213,7 +209,6 @@ export default function IdeasPage() {
   const updateIdeaStatus = async (ideaId, newStatus) => {
     try {
       const token = localStorage.getItem("token");
-      // ✅ FIX: Use API_URL instead of localhost
       await axios.put(
         `${API_URL}/update-idea-status/${ideaId}`,
         { status: newStatus },
@@ -229,7 +224,6 @@ export default function IdeasPage() {
     if (confirm("Are you sure you want to delete this idea?")) {
       try {
         const token = localStorage.getItem("token");
-        // ✅ FIX: Use API_URL instead of localhost
         await axios.delete(
           `${API_URL}/delete-idea/${ideaId}`,
           { headers: { Authorization: `Bearer ${token}` } }
@@ -253,7 +247,7 @@ export default function IdeasPage() {
     setUser(JSON.parse(storedUser));
     fetchIdeas();
     fetchUser();
-    loadNotes(); // Load notes from localStorage
+    loadNotes();
   }, []);
 
   const filteredIdeas = ideas.filter((idea) => {
@@ -299,12 +293,12 @@ export default function IdeasPage() {
 
   return (
     <div className="h-screen overflow-hidden bg-[#050816] text-white flex">
-      {/* Sidebar - Fixed, doesn't scroll */}
+      {/* Sidebar */}
       <div className="h-screen sticky top-0 flex-shrink-0 overflow-y-auto border-r border-[#1E293B] bg-[#081020]">
         <Sidebar user={user} />
       </div>
 
-      {/* Main Content - Scrolls independently */}
+      {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
         <div className="p-8">
           <div className="max-w-7xl mx-auto">
@@ -323,7 +317,6 @@ export default function IdeasPage() {
                   <p className="text-[#94A3B8] mt-2 ml-12">Share and explore innovative startup ideas</p>
                 </div>
                 
-                {/* Sticky Notes Button */}
                 <button
                   onClick={() => setShowNewNote(true)}
                   className="px-6 py-3 rounded-2xl bg-gradient-to-r from-yellow-500 to-orange-500 font-semibold flex items-center gap-2 hover:shadow-lg hover:shadow-yellow-500/25 transition-all duration-300"
@@ -437,8 +430,8 @@ export default function IdeasPage() {
                 </button>
               </div>
 
-              {/* FILTERS PANEL */}
-              if (showFilters && (
+              {/* FILTERS PANEL - FIXED SYNTAX */}
+              {showFilters && (
                 <div className="mt-4 pt-4 border-t border-[#26324A]">
                   <label className="block text-sm text-[#94A3B8] mb-2">Filter by Status</label>
                   <select
@@ -557,8 +550,8 @@ export default function IdeasPage() {
 
       {/* NEW IDEA MODAL */}
       {showNewIdea && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-gradient-to-br from-[#0F1119] to-[#0A0D14] border border-[#26324A] rounded-[32px] max-w-lg w-full shadow-2xl animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-[#0F1119] to-[#0A0D14] border border-[#26324A] rounded-[32px] max-w-lg w-full shadow-2xl">
             <div className="relative p-6 border-b border-[#26324A]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7C3AED] via-[#2563EB] to-[#22C55E] rounded-t-[32px]" />
               <div className="flex justify-between items-start">
@@ -596,7 +589,7 @@ export default function IdeasPage() {
                     required
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition"
+                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition"
                     placeholder="What's your brilliant idea?"
                   />
                 </div>
@@ -611,7 +604,7 @@ export default function IdeasPage() {
                     rows="4"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition resize-none"
+                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 transition resize-none"
                     placeholder="Describe your idea in detail..."
                   />
                 </div>
@@ -690,8 +683,8 @@ export default function IdeasPage() {
 
       {/* NEW STICKY NOTE MODAL */}
       {(showNewNote || editingNote) && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-          <div className="bg-gradient-to-br from-[#0F1119] to-[#0A0D14] border border-[#26324A] rounded-[32px] max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-[#0F1119] to-[#0A0D14] border border-[#26324A] rounded-[32px] max-w-md w-full shadow-2xl">
             <div className="relative p-6 border-b border-[#26324A]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-t-[32px]" />
               <div className="flex justify-between items-start">
@@ -730,7 +723,7 @@ export default function IdeasPage() {
                     required
                     value={noteFormData.title}
                     onChange={(e) => setNoteFormData({ ...noteFormData, title: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition"
+                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition"
                     placeholder="Note title..."
                   />
                 </div>
@@ -742,7 +735,7 @@ export default function IdeasPage() {
                     rows="4"
                     value={noteFormData.content}
                     onChange={(e) => setNoteFormData({ ...noteFormData, content: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition resize-none"
+                    className="w-full px-4 py-3 bg-[#0A1023] border border-[#26324A] rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 transition resize-none"
                     placeholder="Write your note here..."
                   />
                 </div>
