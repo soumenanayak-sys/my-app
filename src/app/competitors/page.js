@@ -22,6 +22,9 @@ import {
   Shield
 } from "lucide-react";
 
+// ✅ FIX: Add API_URL constant for production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
+
 export default function CompetitorNewsPage() {
   const [user, setUser] = useState(null);
   const [keyword, setKeyword] = useState("AI companion robot desktop pet");
@@ -49,22 +52,24 @@ export default function CompetitorNewsPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIX: Use API_URL instead of localhost
       const res = await axios.get(
-        `http://localhost:5000/competitor-news?keyword=${encodeURIComponent(keyword)}`,
+        `${API_URL}/competitor-news?keyword=${encodeURIComponent(keyword)}`,
         {
           headers: { Authorization: "Bearer " + token },
         }
       );
       setNews(res.data.news);
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching competitor news:", error);
+      alert("Failed to fetch competitor news. Please try again.");
     }
     setLoading(false);
   };
 
   const getRobotCategory = (analysis) => {
-    if (analysis.toLowerCase().includes("educational") || analysis.toLowerCase().includes("learning")) return "Educational";
-    if (analysis.toLowerCase().includes("companion") || analysis.toLowerCase().includes("pet")) return "Companion";
+    if (analysis?.toLowerCase().includes("educational") || analysis?.toLowerCase().includes("learning")) return "Educational";
+    if (analysis?.toLowerCase().includes("companion") || analysis?.toLowerCase().includes("pet")) return "Companion";
     return "Desktop Robot";
   };
 
@@ -290,7 +295,7 @@ export default function CompetitorNewsPage() {
                             </span>
                             <span className="text-xs text-[#94A3B8] flex items-center gap-1">
                               <Clock className="w-3 h-3" />
-                              {new Date(item.published).toLocaleDateString()}
+                              {item.published ? new Date(item.published).toLocaleDateString() : "Recent"}
                             </span>
                           </div>
                           <h2 className="text-xl font-bold leading-tight text-white line-clamp-2">
@@ -306,7 +311,7 @@ export default function CompetitorNewsPage() {
                       <div className="flex items-center gap-2 mb-4 text-sm">
                         <div className="flex items-center gap-1 text-[#94A3B8]">
                           <div className="w-4 h-4 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500"></div>
-                          <span>{item.source}</span>
+                          <span>{item.source || "Google News"}</span>
                         </div>
                       </div>
 
@@ -320,27 +325,29 @@ export default function CompetitorNewsPage() {
                             hr: ({...props}) => <hr className="my-3 border-[#1E293B]" {...props} />,
                           }}
                         >
-                          {item.analysis.length > 800 ? item.analysis.substring(0, 800) + "..." : item.analysis}
+                          {item.analysis && item.analysis.length > 800 ? item.analysis.substring(0, 800) + "..." : item.analysis || "Analysis not available"}
                         </ReactMarkdown>
                       </div>
 
                       {/* Key Features Tags */}
-                      <div className="mt-4 pt-3 border-t border-[#1E293B]">
-                        <div className="flex flex-wrap gap-2">
-                          {item.analysis.toLowerCase().includes("expression") && (
-                            <span className="text-xs px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Expressions</span>
-                          )}
-                          {item.analysis.toLowerCase().includes("sensor") && (
-                            <span className="text-xs px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">Multi-sensor</span>
-                          )}
-                          {item.analysis.toLowerCase().includes("educational") && (
-                            <span className="text-xs px-2 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">Educational</span>
-                          )}
-                          {item.analysis.toLowerCase().includes("voice") && (
-                            <span className="text-xs px-2 py-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">Voice AI</span>
-                          )}
+                      {item.analysis && (
+                        <div className="mt-4 pt-3 border-t border-[#1E293B]">
+                          <div className="flex flex-wrap gap-2">
+                            {item.analysis.toLowerCase().includes("expression") && (
+                              <span className="text-xs px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Expressions</span>
+                            )}
+                            {item.analysis.toLowerCase().includes("sensor") && (
+                              <span className="text-xs px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">Multi-sensor</span>
+                            )}
+                            {item.analysis.toLowerCase().includes("educational") && (
+                              <span className="text-xs px-2 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">Educational</span>
+                            )}
+                            {item.analysis.toLowerCase().includes("voice") && (
+                              <span className="text-xs px-2 py-1 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">Voice AI</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Footer Actions */}
                       <div className="mt-4 pt-3 border-t border-[#1E293B] flex items-center justify-between">
