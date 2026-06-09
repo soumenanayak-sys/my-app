@@ -27,6 +27,9 @@ import {
   Save,
 } from "lucide-react";
 
+// ✅ FIX: Add API_URL constant for production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
+
 export default function IdeasPage() {
   const router = useRouter();
 
@@ -87,7 +90,8 @@ export default function IdeasPage() {
   const fetchIdeas = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/ideas", {
+      // ✅ FIX: Use API_URL instead of localhost
+      const res = await axios.get(`${API_URL}/ideas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const ideasData = Array.isArray(res.data) ? res.data : [];
@@ -109,7 +113,8 @@ export default function IdeasPage() {
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/dashboard", {
+      // ✅ FIX: Use API_URL instead of localhost
+      const res = await axios.get(`${API_URL}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data.user);
@@ -175,8 +180,9 @@ export default function IdeasPage() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIX: Use API_URL instead of localhost
       await axios.post(
-        "http://localhost:5000/create-idea",
+        `${API_URL}/create-idea`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -192,8 +198,9 @@ export default function IdeasPage() {
   const voteIdea = async (ideaId) => {
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIX: Use API_URL instead of localhost
       await axios.put(
-        `http://localhost:5000/vote-idea/${ideaId}`,
+        `${API_URL}/vote-idea/${ideaId}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -206,8 +213,9 @@ export default function IdeasPage() {
   const updateIdeaStatus = async (ideaId, newStatus) => {
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIX: Use API_URL instead of localhost
       await axios.put(
-        `http://localhost:5000/update-idea-status/${ideaId}`,
+        `${API_URL}/update-idea-status/${ideaId}`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -221,8 +229,9 @@ export default function IdeasPage() {
     if (confirm("Are you sure you want to delete this idea?")) {
       try {
         const token = localStorage.getItem("token");
+        // ✅ FIX: Use API_URL instead of localhost
         await axios.delete(
-          `http://localhost:5000/delete-idea/${ideaId}`,
+          `${API_URL}/delete-idea/${ideaId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         fetchIdeas();
@@ -429,7 +438,7 @@ export default function IdeasPage() {
               </div>
 
               {/* FILTERS PANEL */}
-              {showFilters && (
+              if (showFilters && (
                 <div className="mt-4 pt-4 border-t border-[#26324A]">
                   <label className="block text-sm text-[#94A3B8] mb-2">Filter by Status</label>
                   <select
@@ -550,7 +559,6 @@ export default function IdeasPage() {
       {showNewIdea && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-gradient-to-br from-[#0F1119] to-[#0A0D14] border border-[#26324A] rounded-[32px] max-w-lg w-full shadow-2xl animate-in zoom-in-95 duration-300">
-            {/* Modal Header */}
             <div className="relative p-6 border-b border-[#26324A]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7C3AED] via-[#2563EB] to-[#22C55E] rounded-t-[32px]" />
               <div className="flex justify-between items-start">
@@ -578,7 +586,6 @@ export default function IdeasPage() {
 
             <form onSubmit={createIdea}>
               <div className="p-6 space-y-5">
-                {/* Title */}
                 <div>
                   <label className="block text-sm font-medium text-[#94A3B8] mb-2 flex items-center gap-2">
                     <FileText size={14} />
@@ -594,7 +601,6 @@ export default function IdeasPage() {
                   />
                 </div>
 
-                {/* Description */}
                 <div>
                   <label className="block text-sm font-medium text-[#94A3B8] mb-2 flex items-center gap-2">
                     <Lightbulb size={14} />
@@ -610,7 +616,6 @@ export default function IdeasPage() {
                   />
                 </div>
 
-                {/* Category & Priority Row */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-[#94A3B8] mb-2 flex items-center gap-2">
@@ -647,7 +652,6 @@ export default function IdeasPage() {
                   </div>
                 </div>
 
-                {/* Reference Link */}
                 <div>
                   <label className="block text-sm font-medium text-[#94A3B8] mb-2 flex items-center gap-2">
                     <Globe size={14} />
@@ -663,7 +667,6 @@ export default function IdeasPage() {
                 </div>
               </div>
 
-              {/* Modal Footer */}
               <div className="p-6 border-t border-[#26324A] flex gap-3">
                 <button
                   type="submit"
@@ -689,7 +692,6 @@ export default function IdeasPage() {
       {(showNewNote || editingNote) && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
           <div className="bg-gradient-to-br from-[#0F1119] to-[#0A0D14] border border-[#26324A] rounded-[32px] max-w-md w-full shadow-2xl animate-in zoom-in-95 duration-300">
-            {/* Modal Header */}
             <div className="relative p-6 border-b border-[#26324A]">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 rounded-t-[32px]" />
               <div className="flex justify-between items-start">
@@ -721,7 +723,6 @@ export default function IdeasPage() {
 
             <form onSubmit={editingNote ? updateNote : createNote}>
               <div className="p-6 space-y-5">
-                {/* Title */}
                 <div>
                   <label className="block text-sm font-medium text-[#94A3B8] mb-2">Title</label>
                   <input
@@ -734,7 +735,6 @@ export default function IdeasPage() {
                   />
                 </div>
 
-                {/* Content */}
                 <div>
                   <label className="block text-sm font-medium text-[#94A3B8] mb-2">Content</label>
                   <textarea
@@ -747,7 +747,6 @@ export default function IdeasPage() {
                   />
                 </div>
 
-                {/* Color Selection */}
                 <div>
                   <label className="block text-sm font-medium text-[#94A3B8] mb-2">Note Color</label>
                   <div className="flex gap-3">
@@ -768,7 +767,6 @@ export default function IdeasPage() {
                 </div>
               </div>
 
-              {/* Modal Footer */}
               <div className="p-6 border-t border-[#26324A] flex gap-3">
                 <button
                   type="submit"
