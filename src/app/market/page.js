@@ -51,6 +51,9 @@ import {
   Legend
 } from "recharts";
 
+// ✅ FIX: Add API_URL constant for production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
+
 export default function CompanyMarketAnalysisPage() {
   const [user, setUser] = useState(null);
   const [url, setUrl] = useState("");
@@ -86,8 +89,9 @@ export default function CompanyMarketAnalysisPage() {
 
     try {
       const token = localStorage.getItem("token");
+      // ✅ FIX: Use API_URL instead of localhost
       const res = await axios.post(
-        "http://localhost:5000/analyze-company-url",
+        `${API_URL}/analyze-company-url`,
         { 
           url: url,
           gemini_api_key: geminiKey || null
@@ -102,12 +106,12 @@ export default function CompanyMarketAnalysisPage() {
       }
     } catch (error) {
       console.error("Analysis error:", error);
-      setError(error.response?.data?.error || "Failed to analyze company");
+      setError(error.response?.data?.error || "Failed to analyze company. Make sure the URL is accessible.");
     }
     setLoading(false);
   };
 
-  // Sample data for charts
+  // Sample data for charts (will be replaced with real data when available)
   const getTrendData = () => {
     return [
       { month: "Jan", score: 45 },
@@ -121,9 +125,9 @@ export default function CompanyMarketAnalysisPage() {
 
   const getSentimentData = () => {
     return [
-      { name: "Positive", value: 65, color: "#22C55E" },
-      { name: "Neutral", value: 15, color: "#EAB308" },
-      { name: "Negative", value: 20, color: "#EF4444" },
+      { name: "Positive", value: analysis?.market_analysis?.positive_sentiment || 65, color: "#22C55E" },
+      { name: "Neutral", value: analysis?.market_analysis?.neutral_sentiment || 15, color: "#EAB308" },
+      { name: "Negative", value: analysis?.market_analysis?.negative_sentiment || 20, color: "#EF4444" },
     ];
   };
 
@@ -243,21 +247,23 @@ export default function CompanyMarketAnalysisPage() {
                   <div>
                     <div className="flex items-center gap-2 mb-2">
                       <Building className="w-6 h-6 text-blue-400" />
-                      <h2 className="text-2xl font-bold text-white">{analysis.company?.name}</h2>
+                      <h2 className="text-2xl font-bold text-white">{analysis.company?.name || "Company Analysis"}</h2>
                     </div>
                     <p className="text-[#94A3B8] text-sm max-w-2xl">{analysis.company?.description || "No description available"}</p>
-                    <a 
-                      href={analysis.company?.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 mt-2 text-xs text-blue-400 hover:text-blue-300"
-                    >
-                      {analysis.company?.url}
-                      <ArrowRight className="w-3 h-3" />
-                    </a>
+                    {analysis.company?.url && (
+                      <a 
+                        href={analysis.company?.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 mt-2 text-xs text-blue-400 hover:text-blue-300"
+                      >
+                        {analysis.company?.url}
+                        <ArrowRight className="w-3 h-3" />
+                      </a>
+                    )}
                   </div>
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-400">{analysis.trend_score}%</div>
+                    <div className="text-3xl font-bold text-blue-400">{analysis.trend_score || 58}%</div>
                     <div className="text-xs text-[#94A3B8]">Market Interest Score</div>
                   </div>
                 </div>
@@ -375,12 +381,16 @@ export default function CompanyMarketAnalysisPage() {
                     <h3 className="text-lg font-semibold text-green-400">Strengths</h3>
                   </div>
                   <ul className="space-y-2">
-                    {analysis.market_analysis?.strengths?.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
-                        <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {analysis.market_analysis?.strengths?.length > 0 ? (
+                      analysis.market_analysis?.strengths?.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
+                          <CheckCircle className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-[#CBD5E1]">No strengths data available</li>
+                    )}
                   </ul>
                 </div>
 
@@ -390,12 +400,16 @@ export default function CompanyMarketAnalysisPage() {
                     <h3 className="text-lg font-semibold text-red-400">Weaknesses</h3>
                   </div>
                   <ul className="space-y-2">
-                    {analysis.market_analysis?.weaknesses?.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
-                        <XCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {analysis.market_analysis?.weaknesses?.length > 0 ? (
+                      analysis.market_analysis?.weaknesses?.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
+                          <XCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-[#CBD5E1]">No weaknesses data available</li>
+                    )}
                   </ul>
                 </div>
               </div>
@@ -408,12 +422,16 @@ export default function CompanyMarketAnalysisPage() {
                     <h3 className="text-lg font-semibold text-blue-400">Opportunities</h3>
                   </div>
                   <ul className="space-y-2">
-                    {analysis.market_analysis?.opportunities?.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
-                        <ArrowRight className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {analysis.market_analysis?.opportunities?.length > 0 ? (
+                      analysis.market_analysis?.opportunities?.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
+                          <ArrowRight className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-[#CBD5E1]">No opportunities data available</li>
+                    )}
                   </ul>
                 </div>
 
@@ -423,45 +441,53 @@ export default function CompanyMarketAnalysisPage() {
                     <h3 className="text-lg font-semibold text-red-400">Threats</h3>
                   </div>
                   <ul className="space-y-2">
-                    {analysis.market_analysis?.threats?.map((item, idx) => (
-                      <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
-                        <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {analysis.market_analysis?.threats?.length > 0 ? (
+                      analysis.market_analysis?.threats?.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-2 text-[#CBD5E1]">
+                          <AlertCircle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-[#CBD5E1]">No threats data available</li>
+                    )}
                   </ul>
                 </div>
               </div>
 
               {/* Key Features */}
-              <div className="bg-[#0B1220] border border-[#1E293B] rounded-xl p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-400" />
-                  Key Features & Products
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {analysis.market_analysis?.key_features?.map((feature, idx) => (
-                    <span key={idx} className="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-sm border border-blue-500/20">
-                      {feature}
-                    </span>
-                  ))}
+              {analysis.market_analysis?.key_features?.length > 0 && (
+                <div className="bg-[#0B1220] border border-[#1E293B] rounded-xl p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-purple-400" />
+                    Key Features & Products
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.market_analysis?.key_features?.map((feature, idx) => (
+                      <span key={idx} className="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-sm border border-blue-500/20">
+                        {feature}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Target Audience */}
-              <div className="bg-[#0B1220] border border-[#1E293B] rounded-xl p-6">
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-green-400" />
-                  Target Audience
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {analysis.market_analysis?.target_audience?.map((audience, idx) => (
-                    <span key={idx} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 text-sm border border-green-500/20">
-                      {audience}
-                    </span>
-                  ))}
+              {analysis.market_analysis?.target_audience?.length > 0 && (
+                <div className="bg-[#0B1220] border border-[#1E293B] rounded-xl p-6">
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-green-400" />
+                    Target Audience
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.market_analysis?.target_audience?.map((audience, idx) => (
+                      <span key={idx} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-400 text-sm border border-green-500/20">
+                        {audience}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* AI Strategy Recommendation */}
               <div className="bg-gradient-to-r from-[#7C3AED]/10 to-[#2563EB]/10 border border-blue-500/20 rounded-xl p-6">

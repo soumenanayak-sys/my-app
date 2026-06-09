@@ -6,9 +6,10 @@ import io from "socket.io-client";
 import Sidebar from "@/components/Sidebar";
 import { Send, User } from "lucide-react";
 
+// ✅ ONLY CHANGE: Updated fallback URL from localhost to production
 const socket = io(
   process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:5000"
+    "https://my-app-2lpp.onrender.com"
 );
 
 export default function ChatPage() {
@@ -27,10 +28,11 @@ export default function ChatPage() {
   const [message, setMessage] =
     useState("");
 
+  // ✅ ONLY CHANGE: Updated fallback URL from localhost to production
   const API_URL =
     process.env
       .NEXT_PUBLIC_API_URL ||
-    "http://localhost:5000";
+    "https://my-app-2lpp.onrender.com";
 
   // ======================
   // AUTH + USERS
