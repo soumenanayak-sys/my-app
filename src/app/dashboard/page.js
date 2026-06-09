@@ -52,6 +52,9 @@ import {
   Share2,
 } from "lucide-react";
 
+// ✅ FIX: API URL for production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
+
 let socket;
 
 export default function UserDashboard() {
@@ -97,7 +100,7 @@ export default function UserDashboard() {
 
   async function fetchMyProjects(token) {
     try {
-      const res = await axios.get("http://localhost:5000/my-projects", {
+      const res = await axios.get(`${API_URL}/my-projects`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMyProjects(Array.isArray(res.data) ? res.data : []);
@@ -108,7 +111,7 @@ export default function UserDashboard() {
 
   async function fetchAllUsersProgress(token) {
     try {
-      const res = await axios.get("http://localhost:5000/all-users-progress", {
+      const res = await axios.get(`${API_URL}/all-users-progress`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const usersWithProgress = Array.isArray(res.data) ? res.data : [];
@@ -128,7 +131,7 @@ export default function UserDashboard() {
 
   async function fetchUser(token) {
     try {
-      const res = await axios.get("http://localhost:5000/dashboard", {
+      const res = await axios.get(`${API_URL}/dashboard`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data.user);
@@ -142,7 +145,7 @@ export default function UserDashboard() {
 
   async function updateProjectStatus(projectId, newStatus, token) {
     try {
-      await axios.put(`http://localhost:5000/update-project/${projectId}`, { status: newStatus }, {
+      await axios.put(`${API_URL}/update-project/${projectId}`, { status: newStatus }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchMyProjects(token);
@@ -154,7 +157,7 @@ export default function UserDashboard() {
 
   async function updateProjectProgress(projectId, progress, token) {
     try {
-      await axios.put(`http://localhost:5000/update-project-progress/${projectId}`, { progress }, {
+      await axios.put(`${API_URL}/update-project-progress/${projectId}`, { progress }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       await fetchMyProjects(token);
@@ -202,7 +205,7 @@ export default function UserDashboard() {
   };
 
   useEffect(() => {
-    socket = io("http://localhost:5000", {
+    socket = io(API_URL, {
       reconnection: true,
       reconnectionAttempts: 5,
     });
@@ -280,7 +283,6 @@ export default function UserDashboard() {
     return null;
   };
 
-  // Get project icon based on title
   const getProjectIcon = (title) => {
     const lowerTitle = title?.toLowerCase() || "";
     if (lowerTitle.includes("robot") || lowerTitle.includes("ai")) return <Brain size={22} />;
@@ -1034,7 +1036,7 @@ export default function UserDashboard() {
               </div>
             </div>
 
-            {/* RIGHT PANEL - Without Chat, Only WhatsApp Invite */}
+            {/* RIGHT PANEL */}
             <div className="space-y-5">
               <div className="bg-gradient-to-br from-[#0F172A]/80 to-[#0a0f1f]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-5">
                 <div className="flex items-center justify-between mb-4">
