@@ -40,6 +40,9 @@ import {
 
 import { FaGithub } from "react-icons/fa";
 
+// ✅ FIX: API URL for production
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://my-app-2lpp.onrender.com";
+
 // Cache for API responses (5 minutes TTL)
 const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000;
@@ -101,9 +104,9 @@ export default function AdminPage() {
   // Function to fetch user journey analytics from backend with DEBUG logs
   const fetchUserJourneyAnalytics = useCallback(async (token) => {
     try {
-      console.log("📊 Fetching user engagement metrics...");
+      console.log("📊 Fetching user engagement metrics from:", `${API_URL}/user-engagement-metrics`);
       const response = await axios.get(
-        "http://localhost:5000/user-engagement-metrics",
+        `${API_URL}/user-engagement-metrics`,
         {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 5000,
@@ -185,7 +188,8 @@ export default function AdminPage() {
 
   // Socket connection with real-time active users tracking
   useEffect(() => {
-    const newSocket = io("http://localhost:5000", {
+    console.log("🔌 Connecting to Socket.IO at:", API_URL);
+    const newSocket = io(API_URL, {
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
@@ -271,7 +275,7 @@ export default function AdminPage() {
           setRecentActivity(cachedStats.recentActivity);
         } else {
           promises.push(
-            axios.get("http://localhost:5000/dashboard-stats", {
+            axios.get(`${API_URL}/dashboard-stats`, {
               headers: { Authorization: `Bearer ${token}` },
               timeout: 5000,
             }).then(res => {
@@ -279,7 +283,8 @@ export default function AdminPage() {
               setWeeklyData(res.data.weeklyData);
               setRecentActivity(res.data.recentActivity);
               setCached('dashboard-stats', res.data);
-            }).catch(() => {
+            }).catch((err) => {
+              console.error("Failed to fetch dashboard stats:", err);
               const pageViews = JSON.parse(localStorage.getItem("pageViews") || "[]");
               setStats({ totalProjects: 0, totalUsers: 1, marketReports: 0, completionRate: 0 });
               setWeeklyData([
@@ -304,7 +309,7 @@ export default function AdminPage() {
           setUpcomingMeetings(upcoming.slice(0, 5));
         } else {
           promises.push(
-            axios.get("http://localhost:5000/meetings", {
+            axios.get(`${API_URL}/meetings`, {
               headers: { Authorization: `Bearer ${token}` },
               timeout: 5000,
             }).then(res => {
@@ -314,7 +319,8 @@ export default function AdminPage() {
                 .sort((a, b) => new Date(a.meeting_date) - new Date(b.meeting_date));
               setUpcomingMeetings(upcoming.slice(0, 5));
               setCached('meetings', res.data);
-            }).catch(() => {
+            }).catch((err) => {
+              console.error("Failed to fetch meetings:", err);
               setMeetings([]);
               setUpcomingMeetings([]);
             })
@@ -353,7 +359,7 @@ export default function AdminPage() {
     const token = localStorage.getItem("token");
     
     try {
-      await axios.post("http://localhost:5000/create-meeting", meetingForm, {
+      await axios.post(`${API_URL}/create-meeting`, meetingForm, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 10000,
       });
@@ -369,7 +375,7 @@ export default function AdminPage() {
         participants: [],
       });
       
-      const res = await axios.get("http://localhost:5000/meetings", {
+      const res = await axios.get(`${API_URL}/meetings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setMeetings(res.data || []);
@@ -392,7 +398,7 @@ export default function AdminPage() {
   const markAttendance = async (meetingId) => {
     const token = localStorage.getItem("token");
     try {
-      await axios.post(`http://localhost:5000/join-meeting/${meetingId}`, {}, {
+      await axios.post(`${API_URL}/join-meeting/${meetingId}`, {}, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000,
       });
